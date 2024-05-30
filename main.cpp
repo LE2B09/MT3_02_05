@@ -118,6 +118,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
+	bool isDragging = false;
+	int prevMouseX = 0;
+	int prevMouseY = 0;
+
+
+
 	AABB aabb1{ .min{-0.5f, -0.5f, -0.5f}, .max{0.0f, 0.0f, 0.0f} };
 	AABB aabb2{ .min{0.2f, 0.2f, 0.2f}, .max{1.0f, 1.0f, 1.0f} };
 
@@ -136,16 +142,50 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		memcpy(preKeys, keys, 256);
 		Novice::GetHitKeyStateAll(keys);
 
+		// マウス入力を取得
+		POINT mousePosition;
+		GetCursorPos(&mousePosition);
+
 		///
 		/// ↓更新処理ここから
 		///
+
+		  // マウスドラッグによる回転制御
+		if (Novice::IsPressMouse(1))
+		{
+			if (!isDragging)
+			{
+				isDragging = true;
+				prevMouseX = mousePosition.x;
+				prevMouseY = mousePosition.y;
+			}
+			else
+			{
+				int deltaX = mousePosition.x - prevMouseX;
+				int deltaY = mousePosition.y - prevMouseY;
+				rotate.y += deltaX * 0.01f; // 水平方向の回転
+				rotate.x += deltaY * 0.01f; // 垂直方向の回転
+				prevMouseX = mousePosition.x;
+				prevMouseY = mousePosition.y;
+			}
+		}
+		else
+		{
+			isDragging = false;
+		}
+
+		// マウスホイールで前後移動
+		int wheel = Novice::GetWheel();
+		if (wheel != 0)
+		{
+			cameraTranslate.z += wheel * 0.01f; // ホイールの回転方向に応じて前後移動
+		}
 
 		ImGui::Begin("Settings");
 		ImGui::DragFloat3("AABB1 Min", &aabb1.min.x, 0.01f);
 		ImGui::DragFloat3("AABB1 Max", &aabb1.max.x, 0.01f);
 		ImGui::DragFloat3("AABB2 Min", &aabb2.min.x, 0.01f);
 		ImGui::DragFloat3("AABB2 Max", &aabb2.max.x, 0.01f);
-		ImGui::DragFloat3("rotate", &rotate.x, 0.01f);
 		ImGui::DragFloat3("Camera Translate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("Camera Rotate", &cameraRotate.x, 0.01f);
 		ImGui::End();
@@ -200,7 +240,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		bool collision = IsCollision(aabb1, aabb2);
 
 		// AABBを描画
-		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, collision ? 0xFF0000FF : 0xFFFFFFFF); 　
+		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, collision ? 0xFF0000FF : 0xFFFFFFFF);
 		DrawAABB(aabb2, viewProjectionMatrix, viewportMatrix, 0xFFFFFFFF);
 
 		///
