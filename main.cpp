@@ -200,7 +200,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		bool collision = IsCollision(aabb1, aabb2);
 
 		// AABBを描画
-		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, collision ? 0xFF0000FF : 0xFFFFFFFF);
+		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, collision ? 0xFF0000FF : 0xFFFFFFFF); 
 		DrawAABB(aabb2, viewProjectionMatrix, viewportMatrix, 0xFFFFFFFF);
 
 		///
